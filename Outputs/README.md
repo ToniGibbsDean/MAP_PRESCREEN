@@ -1,0 +1,1 @@
+This directory should only contain intermediate outputs. You should always be able to delete the contents of this directory and reprdouce it from the Code. Note that the contents are not committed to the github repo by default.

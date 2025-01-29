@@ -1,0 +1,1 @@
+This directory should only contain raw data. Note that the contents are not committed to the github repo by default.
