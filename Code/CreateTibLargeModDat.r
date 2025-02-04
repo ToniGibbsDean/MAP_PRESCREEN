@@ -50,17 +50,17 @@ PQ_sums <- dat %>%
     filter(complete.cases(.)) %>%
     mutate(totalPqb = rowSums(across(starts_with("pqb")))) %>%
     mutate(multiHyst = rowSums(across(starts_with("hyster1___")))) %>% 
- mutate(HystCats = case_when(hyster1___3 == 1 & hyster1___2 == 1 ~ "oophfull",
-                             hyster1___4 == 1 & hyster1___2 == 1 ~ "salpifull",
-                             #hyster1___4 == 1 ~ "salpiHyst",
-                             hyster1___4 == 1 ~ "salpifull",
-                             hyster1___3 == 1 ~ "oophfull",
-                             hyster1___5 == 1 ~ "otherHyst",
-                             hyster1___6 == 1 ~ "otherUnknownHyst",
-                             hyster1___7 == 1 ~ "none", 
-                             hyster1___1 == 1 ~ "partialHyst",
-                             hyster1___2 == 1 ~ "fullHyst",
-                                .default = NA)) %>%
+    mutate(HystCats = case_when(hyster1___3 == 1 & hyster1___2 == 1 ~ "oophfull",
+                                hyster1___4 == 1 & hyster1___2 == 1 ~ "salpifull",
+                                #hyster1___4 == 1 ~ "salpiHyst",
+                                hyster1___4 == 1 ~ "salpifull",
+                                hyster1___3 == 1 ~ "oophfull",
+                                hyster1___5 == 1 ~ "otherHyst",
+                                hyster1___6 == 1 ~ "otherUnknownHyst",
+                                hyster1___7 == 1 ~ "none", 
+                                hyster1___1 == 1 ~ "partialHyst",
+                                hyster1___2 == 1 ~ "fullHyst",
+                                .default = NA)) %>%``
     #mutate(HystCats = case_when( multiHyst > 1 ~ "multiHyst", 
      #                           .default = HystCats)) %>%
     mutate(hyster5 = as.numeric(hyster5), hyster2 = as.numeric(hyster2)) %>%

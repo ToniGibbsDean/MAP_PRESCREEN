@@ -10,19 +10,41 @@ path="Figures"
 #looking at relationhsips - only inc. hystcats and age
 ggpairs(d)
 
+################################################################################
+#Create modelling dataframes 
+################################################################################
+
+#newly defined categories 
 moddat <- d %>%
     mutate(anyHysts = !HystCats=="none") %>%
     mutate(logPqb = log(totalPqb+0.001)) %>%
-    mutate(hystMag = case_when(HystCats == "fullHyst" ~ "fullHyst",
-                               HystCats == "partialHyst" ~ "partialHyst",
-                               HystCats == "none" ~ "none", 
-                               .default = "other"))
+    mutate(hystMag = case_when( HystCats == "none" ~ "none",
+                                HystCats == "fullHyst" ~ "fullHyst",
+                                HystCats == "partialHyst" ~ "partialHyst",
+                                HystCats == "oophfull" ~ "oophfull", 
+                                HystCats == "salpifull" ~ "salpifull", 
+                                .default = "other")) %>%
+    mutate(hystMag = factor(hystMag, level=c("fullHyst", "salpifull","partialHyst", "oophfull",  "other", "none"), ordered=TRUE)) 
 
-#modelling
-m1 <- lm(totalPqb ~ HystCats, moddat)
-m2 <- lm(totalPqb ~ age, moddat)
-m3 <- lm(totalPqb ~ HystCats + age, moddat)
-m4 <- lm(totalPqb ~ HystCats*age, moddat)
+
+#secondary modelling df - not including the largest category "none"
+moddat2 <- d %>%
+    mutate(anyHysts = !HystCats=="none") %>%
+    mutate(logPqb = log(totalPqb+0.001)) %>%
+    mutate(hystMag = case_when( HystCats == "none" ~ "none",
+                                HystCats == "fullHyst" ~ "fullHyst",
+                                HystCats == "partialHyst" ~ "partialHyst",
+                                HystCats == "oophfull" ~ "oophfull", 
+                                HystCats == "salpifull" ~ "salpifull", 
+                                .default = "other")) %>%
+    filter(!hystMag=="none") %>%
+    filter(!hystMag=="other")
+
+################################################################################
+#Multiple comparison approach using newly defined categories 
+################################################################################
+
+########### modat ####################
 m5 <- lm(totalPqb ~ anyHysts + age, moddat)
 m6 <- lm(totalPqb ~ anyHysts*age, moddat)
 m7 <- lm(totalPqb ~ anyHysts, moddat)
@@ -31,11 +53,54 @@ m8 <- lm(totalPqb ~ hystMag, moddat)
 m9 <- lm(totalPqb ~ hystMag + age, moddat)
 m10 <- lm(totalPqb ~ hystMag*age, moddat)
 
-model.sel(m1,m2,m3,m4,m5,m6,m7,m8,m9,m10)
+model.sel(m5,m6,m7,m8,m9,m10)
 
 summary(m6)
+summary(m8)
+summary(m7)
+summary(m9)
 
-wilcox.test(totalPqb ~ anyHysts + age, moddat)
+########### modat2 ####################
+m8_2 <- lm(totalPqb ~ hystMag, moddat2)
+m9_2 <- lm(totalPqb ~ hystMag + age, moddat2) #winner
+m10_2 <- lm(totalPqb ~ hystMag*age, moddat2)
+
+model.sel(m8_2,m9_2,m10_2)
+
+summary(m9_2) #only age is significant
+summary(m8_2) # none signficant
+
+################################################################################
+# more basic aov approach using Tukey - no covariates 
+################################################################################
+
+########### modat ####################
+aov<-aov(totalPqb ~ hystMag, moddat) #significant p=.031
+summary(aov)
+TukeyHSD(aov, which="hystMag") # only significant relationship is other-none; the biggest categories 
+
+########### modat2 ####################
+aov<-aov(totalPqb ~ hystMag, moddat2) # removing none makes it none significant p.447
+summary(aov)
+TukeyHSD(aov, which="hystMag") # obviously all non-sig
+
+################################################################################
+# more basic aov approach using Tukey - with covariate age
+################################################################################
+
+########### modat ####################
+aov<-aov(totalPqb ~ hystMag*age, moddat) #hystMag p=.025; age p<.001
+summary(aov)
+TukeyHSD(aov, which="hystMag") # only significant relationship is other-none; the biggest categories 
+
+########### modat2 ####################
+aov<-aov(totalPqb ~ hystMag*age, moddat2) # only age is significant p<.001
+summary(aov)
+TukeyHSD(aov, which="hystMag") # obviously all non-sig
+
+################################################################################
+# ordering - order the factors none < partial < full etc., 
+################################################################################
 
 #######################
 #plots
@@ -56,6 +121,39 @@ PqbXageXanyHysts_plot<-moddat %>% ggplot(aes(y=totalPqb, x=age, colour=anyHysts)
 boxplot_simpleHystresult_PQBvsAnyHyst <- moddat %>% 
     ggplot(aes(y=totalPqb, x=anyHysts), group=anyHysts) +
     geom_boxplot(aes(fill=anyHysts)) +
+    geom_point(position = "jitter") +
+    theme_classic()
+
+boxplot_simpleHystresult_PQBvshystMag_noNone <- moddat2 %>% 
+    mutate(hystMag = factor(hystMag, level=c("fullHyst", "salpifull","partialHyst", "oophfull",  "other", "none"), ordered=TRUE)) %>%
+    ggplot(aes(y=totalPqb, x=hystMag), group=hystMag) +
+    geom_boxplot(aes(fill=hystMag)) +
+    geom_point(position = "jitter") +
+    theme_classic()
+
+boxplot_simpleHystresult_PQBvshystMag_noNone <- moddat %>% 
+    mutate(hystMag = factor(hystMag, level=c("fullHyst", "salpifull","partialHyst", "oophfull",  "other", "none"), ordered=TRUE)) %>%
+    ggplot(aes(y=totalPqb, x=hystMag), group=hystMag) +
+    geom_boxplot(aes(fill=hystMag)) +
+    geom_point(position = "jitter") +
+    theme_classic()
+###
+
+PqbXageXhystCats_plot<-moddat %>% ggplot(aes(y=totalPqb, x=age, colour=hystMag)) +
+    geom_point() +
+    geom_smooth(method="lm", se=FALSE) +
+    theme_classic() +
+    facet_wrap(~hystMag)
+
+PqbXageXanyHysts_plot<-moddat %>% ggplot(aes(y=totalPqb, x=age, colour=hystMag)) +
+    #geom_point() +
+    geom_smooth(method="lm") +
+    theme_classic() 
+
+
+boxplot_simpleHystresult_PQBvsAnyHyst <- moddat %>% 
+    ggplot(aes(y=totalPqb, x=hystMag), group=hystMag) +
+    geom_boxplot(aes(fill=hystMag)) +
     geom_point(position = "jitter") +
     theme_classic()
 
