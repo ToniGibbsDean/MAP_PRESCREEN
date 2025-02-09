@@ -16,7 +16,6 @@ names(which(colSums(!is.na(alldat)) > 1000))
 #remove any psychosis dx
 dat <- alldat[alldat %>% select(starts_with("psychosis")) %>% rowSums(na.rm=TRUE) == 0,]
 
-
 #create summary df to answer question
 PQ_sums <- dat %>% 
     as_tibble() %>%
@@ -56,19 +55,15 @@ PQ_sums <- dat %>%
     mutate(totalPqb = rowSums(across(c("pqb1":"pqb21")))) %>%
     mutate(totalDistressPqb = rowSums(across(c("pqb1_yes":"pqb21_yes")))) %>%
     mutate(multiHyst = rowSums(across(starts_with("hyster1___")))) %>% 
-    mutate(HystCats = case_when(hyster1___3 == 1 & hyster1___2 == 1 ~ "oophfull",
-                                hyster1___4 == 1 & hyster1___2 == 1 ~ "salpifull",
-                                #hyster1___4 == 1 ~ "salpiHyst",
-                                hyster1___4 == 1 ~ "salpifull",
-                                hyster1___3 == 1 ~ "oophfull",
-                                hyster1___5 == 1 ~ "otherHyst",
-                                hyster1___6 == 1 ~ "otherUnknownHyst",
-                                hyster1___7 == 1 ~ "none", 
-                                hyster1___1 == 1 ~ "partialHyst",
-                                hyster1___2 == 1 ~ "fullHyst",
-                                .default = NA)) %>%``
+    mutate(HystCats = case_when(
+                                hyster1___7 == 1 & hyster1___6==0 ~ "None",
+                                hyster1___1 == 1 ~ "PartialHysterectomy",
+                                hyster1___2 == 1 ~ "Hysterectomy",
+                                hyster1___4 == 1 ~ "Salpingectomy",
+                                hyster1___3 == 1 ~ "Oopherectomy",
+                                .default = NA)) %>%
     #mutate(HystCats = case_when( multiHyst > 1 ~ "multiHyst", 
-     #                           .default = HystCats)) %>%
+     #                          .default = HystCats)) %>%
     mutate(hyster5 = as.numeric(hyster5), hyster2 = as.numeric(hyster2)) %>%
     rowwise() %>%
     mutate(AgeFirstInt = min(hyster5, hyster2, na.rm=TRUE)) %>%
@@ -86,7 +81,7 @@ PQ_sums <- dat %>%
 #produced tibble has 944 rows
 
 cl.dat <- PQ_sums %>% filter(complete.cases(.)) %>% 
-    mutate(HystCats = as.factor(HystCats),
+    mutate(HystCats = factor(HystCats, levels = c("None", "PartialHysterectomy", "Hysterectomy", "Salpingectomy","Oopherectomy"), ordered=TRUE),
            birth_control = as.logical(birth_control),
            pregnancy =  as.logical(pregnancy))
 
