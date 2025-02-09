@@ -24,6 +24,10 @@ PQ_sums <- dat %>%
     #group_by(record_id) %>%
     select( pqb1,pqb2,pqb3,pqb4,pqb5,pqb6,pqb7,pqb8,pqb9,pqb10,pqb11,
             pqb12,pqb13,pqb14,pqb15,pqb16,pqb17,pqb18,pqb19,pqb20,pqb21,
+            pqb1_yes,pqb2_yes,pqb3_yes,pqb4_yes,pqb5_yes,pqb6_yes,pqb7_yes,
+            pqb8_yes,pqb9_yes,pqb10_yes,pqb11_yes,
+            pqb12_yes,pqb13_yes,pqb14_yes,pqb15_yes,pqb16_yes,pqb17_yes,pqb18_yes,
+            pqb19_yes,pqb20_yes,pqb21_yes,
             hyster1___1,
             hyster1___2,
             hyster1___3,
@@ -47,8 +51,10 @@ PQ_sums <- dat %>%
             othermeds,
             birthcity,
             prescreendate) %>%
+    mutate(across(c("pqb1_yes":"pqb21_yes"), ~ replace_na(.,  0))) %>%
     filter(complete.cases(.)) %>%
-    mutate(totalPqb = rowSums(across(starts_with("pqb")))) %>%
+    mutate(totalPqb = rowSums(across(c("pqb1":"pqb21")))) %>%
+    mutate(totalDistressPqb = rowSums(across(c("pqb1_yes":"pqb21_yes")))) %>%
     mutate(multiHyst = rowSums(across(starts_with("hyster1___")))) %>% 
     mutate(HystCats = case_when(hyster1___3 == 1 & hyster1___2 == 1 ~ "oophfull",
                                 hyster1___4 == 1 & hyster1___2 == 1 ~ "salpifull",
@@ -69,12 +75,15 @@ PQ_sums <- dat %>%
     mutate(AgeFirstInt = case_when(is.infinite(AgeFirstInt) ~ NA, .default = AgeFirstInt)) %>%
     mutate(age = as.numeric((mdy(prescreendate) - mdy(dob)) / 365)) %>%
     ungroup() %>%
-    select(totalPqb, 
+    select(totalPqb,
+           totalDistressPqb, 
            HystCats, 
            #AgeFirstInt, not enough data
            age, 
            birth_control, 
            pregnancy)
+
+#produced tibble has 944 rows
 
 cl.dat <- PQ_sums %>% filter(complete.cases(.)) %>% 
     mutate(HystCats = as.factor(HystCats),
