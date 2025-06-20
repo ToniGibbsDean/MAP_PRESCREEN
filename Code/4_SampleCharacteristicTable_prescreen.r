@@ -10,7 +10,7 @@ d<-readRDS("Outputs/summarydf.RDS")
 
 prescreenCleanDat_sampleCharTab <- d %>%
   select(DataCollection, age, birth_sex, 
-        menopausalStatus, HystCats, lastperiod_daysSince, birth_control, 
+        menopausalStatus, HystCats, ageAtHyst, lastperiod_daysSince, birth_control, 
         PCOS, Endocrine_or_thyroid_Disease, EatingDisorder, SubstanceUseDisorder, seizure,
         psychosisDXyesNo, 
         moodDXyesNo, 

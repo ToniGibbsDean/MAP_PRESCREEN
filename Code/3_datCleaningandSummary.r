@@ -71,7 +71,12 @@ datcl <- x %>%
       "None", "Unknown", "OtherGyneSurgery",
       "Salpingectomy", "PartialHysterectomy",
       "FullHysterectomy", "Oopherectomy"
-    ), ordered = TRUE))
+    ), ordered = TRUE),
+    
+  hyster2_clean = str_extract(hyster2, "\\d+"),
+  ageAtHyst = as.numeric(hyster2_clean),
+  ageAtHyst = ifelse(ageAtHyst > 100, NA, ageAtHyst))  # remove impossible values
+
 
 # Mood and psychosis dx data - must be processed in old and new redcap projects seperately 
 
@@ -246,6 +251,7 @@ select(email,
        pregnant,
         totalPqb,
         HystCats,
+        ageAtHyst,
         #hyster2_ageAtHystorOop,
         #remove_flag,
         psychosisDXyesNo,
@@ -290,3 +296,4 @@ select(email,
 
 saveRDS(summarydf, "Outputs/summarydf.RDS")
 write.csv(filter_report, "Outputs/trackingExclusions_datacleaning.csv")
+write.csv(summarydf, "Outputs/summarydf.csv")

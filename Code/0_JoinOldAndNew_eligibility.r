@@ -3,6 +3,9 @@ library(tidyverse)
 library(gt)
 library(dplyr)
 library(tidyr)
+library(gtsummary)
+
+
 
 # 1)  initial data loading ---------------------------------------------------------------
 #new data 
@@ -50,20 +53,21 @@ n_selected<-n %>%
   mutate(name=paste0(firstname, " ", middleinitial, " ", lastname)) %>% 
   select(all_of(cols)) 
 
-o_reformatted <- data.frame(
-  prescreendate = as_date(pscreen_date),
-  name = pscreen_name,
-  email = pscreen_email,
-  elig_determination___1 = as.numeric(str_detect(elig_determination___1, "1")),
-  elig_determination___2 = as.numeric(str_detect(elig_determination___2, "2")),
-  elig_determination___3 = as.numeric(str_detect(elig_determination___3, "3")),
-  elig_determination___4 = as.numeric(str_detect(elig_determination___4, "4")),
-  elig_determination___5 = as.numeric(str_detect(elig_determination___5, "5")),
-  elig_determination___6 = as.numeric(str_detect(elig_determination___6, "6")),
-  elig_determination___7 = as.numeric(str_detect(elig_determination___7, "7")),
-  elig_determination___8 = as.numeric(str_detect(elig_determination___8, "8"))
-) %>%
-  as_tibble()
+o_reformatted <- o %>%
+  transmute(
+    prescreendate = pscreen_date,
+    name = pscreen_name,
+    email = pscreen_email,
+    elig_determination___1,
+    elig_determination___2,
+    elig_determination___3,
+    elig_determination___4,
+    elig_determination___5,
+    elig_determination___6,
+    elig_determination___7,
+    elig_determination___8
+  )
+
 
 new_df <- rbind(
   cbind(n_selected, DataCollection = "old"),
@@ -133,13 +137,52 @@ elig_summary <- new_df %>%
   arrange(desc(Percent_present))
 
 
+eligibilityDat <- new_df %>%
+  mutate(
+    Ineligible = as.numeric(as.character(Ineligible)),
+    Withdrawn = as.numeric(as.character(Withdrawn)),
+    Neligible = as.numeric(Neligible),
+    Status = case_when(
+      Ineligible == 1 ~ "Ineligible",
+      Withdrawn == 1 ~ "Withdrawn",
+      Neligible > 0 ~ "Eligible",
+      TRUE ~ "No Designation"
+    )
+  )
+  
+
+eligibility_sampleCharTab <- eligibilityDat %>%
+  select(DataCollection,
+ "MAD_depression",               
+"CHR_group",
+ "HC_group" ,                    
+"Future_eligible",
+"Full_hysterectomy_screen_only",
+"Withdrawn",
+"DataCollection"  ,             
+ "Neligible",
+ "eligible", 
+  Ineligible, 
+  Status   
+) %>%
+  tbl_summary(missing = "ifany") %>%
+  bold_labels()
+
+
+
+saveRDS(eligibilityDat, "Outputs/joined_eligibilityDat.rds")
+write.csv(eligibilityDat, "Outputs/joined_eligibilityDat.csv")
+gtsave(as_gt(eligibility_sampleCharTab), "Outputs/eligibility_sampleCharTab.pdf")
+
+
+
+
+
+
+
 ### issue that n "ineligible" indicated on the questionnaire is 400 and something, whereas 
 # the number of people with 0's in every column - also indicating not eligible for each category, 
 # is over 1000 --> indicates that there a lot of people without a designation 
-
-saveRDS(new_df, "Outputs/eligible.RDS")
-write.csv(elig_summary, "Outputs/elig_summary.csv")
-write.csv(new_df, "Outputs/eligible.csv")
 
 # catching anomolous dat
 anomolous1 <- new_df %>%
@@ -153,3 +196,28 @@ group_by(DataCollection) %>%
 summarise(n())
 #summary()
 # 713 not indicated as ineligible, but then no other category indicated; excluded withdrawn (n=20)
+new_df %>%
+group_by(DataCollection) %>%
+summarise(n())
+
+
+
+
+
+
+new_df %>%
+group_by(MissingEligibility) %>%
+summarise(n())
+
+
+new_df <- new_df %>%
+  mutate(
+    Ineligible_num = as.numeric(as.character(Ineligible)),
+    Withdrawn_num = as.numeric(as.character(Withdrawn)),
+    MissingEligibility = ifelse(
+      is.na(Ineligible_num) & Neligible == 0 & Withdrawn_num == 0,
+      TRUE, FALSE
+    )
+  )
+
+

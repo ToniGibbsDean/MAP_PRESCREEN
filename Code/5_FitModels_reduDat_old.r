@@ -67,12 +67,13 @@ sampleCharTab <- d_filtered %>%
   select(DataCollection, age, birth_sex, 
         menopausalStatus, HystCats, lastperiod_daysSince, birth_control, 
         PCOS, Endocrine_or_thyroid_Disease, EatingDisorder, SubstanceUseDisorder, seizure,
-        psychosisDXyesNo, moodDXyesNo, totalPqb) %>%
+        psychosisDXyesNo, moodDXyesNo, totalPqb,
+        HT, bc_type, iud_type, hormone_therapy_category, local_global_category) %>%
   tbl_summary(missing = "ifany") %>%
   bold_labels()
 
   gtsave(sampleCharTab, filename = "sample_characteristics.html")
-gtsave(as_gt(sampleCharTab), "Outputs/table1.pdf")
+  gtsave(as_gt(sampleCharTab), "Outputs/sampleChar_prescreenedPAPER1.pdf")
   ##### YOU ARE HERE #####
 
 
