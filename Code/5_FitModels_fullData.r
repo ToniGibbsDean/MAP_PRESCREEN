@@ -95,13 +95,13 @@ ggpairs(corrs)
 #age
 #age at hysterectomy 
 
-M0  <- totalPqb ~ 1 (null)
-M1	<- totalPqb ~ HystCats + menopausalStatus + age
-M2  <- totalPqb ~ HystCats * menopausalStatus + age
-M3	<- totalPqb ~ HystCats * HRT + menopausalStatus + age
-M4	<- totalPqb ~ HystCats * menopausalStatus + HRT * age
-M5	<- totalPqb ~ HystCats * menopausalStatus + HRT * age + log1p(lastperiod_daysSince)
-M6	<- totalPqb ~ HystCats * menopausalStatus + HRT * age + menopausalStatus * log1p(lastperiod_daysSince)
-M7	<- totalPqb ~ HystCats * menopausalStatus + HRT * age + menopausalStatus * log1p(lastperiod_daysSince) + ageAtHyst
-M8	<- totalPqb ~ HystCats * menopausalStatus + HRT * age + menopausalStatus * log1p(lastperiod_daysSince) + HystCats * ageAtHyst
-M9	<- totalPqb ~ HystCats * menopausalStatus + HRT * menopausalStatus + age + ageAtHyst + menopausalStatus * log1p(lastperiod_daysSince)
+M0  <- lm(totalPqb ~ 1, d_filtered) # (null)
+M1	<- lm(totalPqb ~ HystCats + menopausalStatus + age, d_filtered)
+M2  <- lm(totalPqb ~ HystCats * menopausalStatus + age, d_filtered)
+M3	<- lm(totalPqb ~ HystCats * HRT + menopausalStatus + age, d_filtered)
+M4	<- lm(totalPqb ~ HystCats * menopausalStatus + HT * age, d_filtered)
+M5	<- lm(totalPqb ~ HystCats * menopausalStatus + HT * age + log1p(lastperiod_daysSince), d_filtered)
+M6	<- lm(totalPqb ~ HystCats * menopausalStatus + HT * age + menopausalStatus * log1p(lastperiod_daysSince), d_filtered)
+M7	<- lm(totalPqb ~ HystCats * menopausalStatus + HT * age + menopausalStatus * log1p(lastperiod_daysSince) + ageAtHyst, d_filtered)
+M8	<- lm(totalPqb ~ HystCats * menopausalStatus + HT * age + menopausalStatus * log1p(lastperiod_daysSince) + HystCats * ageAtHyst, d_filtered)
+M9	<- lm(totalPqb ~ HystCats * menopausalStatus + HT * menopausalStatus + age + ageAtHyst + menopausalStatus * log1p(lastperiod_daysSince), d_filtered)
