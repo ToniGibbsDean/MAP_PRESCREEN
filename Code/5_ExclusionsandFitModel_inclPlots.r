@@ -1,15 +1,80 @@
 
 
-d<-readRDS("Outputs/largeModDF.RDS")
+#d<-readRDS("Outputs/largeModDF.RDS")
+#d<-readRDS("Outputs/summarydatincomplete.RDS")
 library(GGally)
 library(MuMIn)
 library(tidyverse)
 library(patchwork)
+library(purrr)
+library(rlang)
+library(dplyr)
+library(gtsummary)
+library(gt)
 
 path="Figures"
 
-#looking at relationhsips - only inc. hystcats and age
-ggpairs(d)
+d<-readRDS("Outputs/summarydf.RDS")
+
+################################################################################
+# exclusions 
+################################################################################
+track_filters <- function(data, ...) {
+  conditions <- enquos(...)
+  names(conditions) <- sapply(conditions, rlang::as_label)
+
+  out <- tibble(Step = "Original", RowsRemaining = nrow(data), RowsRemoved = 0)
+  current_data <- data
+
+  for (i in seq_along(conditions)) {
+    step_label <- names(conditions)[i]
+    before <- nrow(current_data)
+    current_data <- filter(current_data, !!conditions[[i]])
+    after <- nrow(current_data)
+    out <- bind_rows(out, tibble(
+      Step = step_label,
+      RowsRemaining = after,
+      RowsRemoved = before - after
+    ))
+  }
+
+  list(filtered_data = current_data, tracking_table = out)
+}
+
+result <- track_filters(
+  d,
+  birth_sex == "female",
+  country_US == "USA",
+  !is.na(birth_control),
+  !is.na(pregnant),
+  pregnant != "Yes",
+  !is.na(totalPqb),
+  EatingDisorder == 0,
+  SubstanceUseDisorder == 0,
+  seizure == 0,
+  Endocrine_or_thyroid_Disease == 0,
+  psychosisDXyesNo == 0,
+  MEN_IorII == 0
+)
+
+# Extract both elements
+d_filtered <- result$filtered_data #923
+trackingExclusions <- result$tracking_table
+
+write.csv(trackingExclusions, "Outputs/trackingExclusions.csv")
+
+sampleCharTab <- d_filtered %>%
+  select(DataCollection, age, birth_sex, 
+        menopausalStatus, HystCats, lastperiod_daysSince, birth_control, 
+        PCOS, Endocrine_or_thyroid_Disease, EatingDisorder, SubstanceUseDisorder, seizure,
+        psychosisDXyesNo, moodDXyesNo, totalPqb) %>%
+  tbl_summary(missing = "ifany") %>%
+  bold_labels()
+
+  gtsave(sampleCharTab, filename = "sample_characteristics.html")
+gtsave(as_gt(sampleCharTab), "Outputs/table1.pdf")
+  ##### YOU ARE HERE #####
+
 
 ################################################################################
 #Create modelling dataframes 
@@ -20,6 +85,11 @@ moddat <- d %>%
     mutate(anyHysts = !HystCats=="None") %>%
     mutate(logPqb = log(totalPqb+0.001)) %>%
     mutate(HRT = as.factor(HRT))
+
+################################################################################
+#looking at relationhsips - only inc. hystcats and age
+################################################################################
+ggpairs(d)
 
 ################################################################################
 #Multi-model comparison 

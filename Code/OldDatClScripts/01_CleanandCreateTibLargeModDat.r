@@ -97,5 +97,6 @@ cl.dat <- PQ_sums %>% filter(complete.cases(.)) %>%
            birth_control = as.logical(birth_control),
            pregnancy =  as.logical(pregnancy))
 
+
 saveRDS(cl.dat, "Outputs/largeModDF.RDS")
             

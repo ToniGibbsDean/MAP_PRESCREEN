@@ -1,0 +1,28 @@
+
+x<-read.csv("Outputs/joinedCorrected_df.rds")
+a<-read.csv("Outputs/joinedCorrected_df.csv")
+
+###### Variables needed for model
+#*note that now data has been combined "old project" col headings have been changed to correspond with "new project" col headings (where possible)
+
+#age: dob; prescreendate
+#birth_sex: birth_sex
+#state: residence_state
+#zipcode: residence_zipcode
+#Reproductive stage: 
+#time since last period: lastperiod
+#Hormone therapy:
+#Hormone therapy type:
+#anyGyneSurgery: old data: pscreen_hysterectomy + new data any hyster__1:6
+#hysterectomy_type: hyster__1, hyster__2, hyster__3, hyster__4, hyster__5 (+ non corresponding options only in new project: hyster1__6, hyster__7)
+#age of hysterectomy: hyster 2
+#head injury: head, seizure 
+#Excl_med_condits: exclusion_dx1___1-8
+#mood_dx: mood_dx1, mood_dx2, mood_dx3, mood_dx4, mood_dx5, mood_dx6
+#psychosis_dx: psychosisdx1:10
+#pqb total: pqb1-21
+#pqb disrtress: pqb1_yes: pqb21_yes
+
+###
+
+#birth_sex
